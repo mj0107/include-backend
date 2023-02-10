@@ -17,17 +17,17 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-//html
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine','ejs');
-app.engine('html', require('ejs').__express);
-app.use('/public', express.static(path.join(__dirname, 'public')));
+// //html
+// app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine','ejs');
+// app.engine('html', require('ejs').__express);
+// app.use('/public', express.static(path.join(__dirname, 'public')));
 
-//react
-// var cors = require('cors');
-// app.use(cors());
+// react
+var cors = require('cors');
+app.use(cors());
 
-// app.use(express.static(path.join(__dirname, 'build')));
+app.use(express.static(path.join(__dirname, 'build')));
 
 app.use('/member', memberBoardRouter);
 app.use('/activity', activityBoardRouter);

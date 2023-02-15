@@ -38,7 +38,7 @@ const ACTIVITY = {
 
         db.getConnection((err, connection) => {
             if(!err) {
-                let sql = `INSERT INTO ACTIVITY_BOARD_TB VALUES ( ID_PK, ?)`;
+                let sql = `INSERT INTO ACTIVITY_BOARD_TB VALUES ( ID_PK, ? )`;
                 connection.query(sql, [input], (err, res) => {
                     connection.release();
 

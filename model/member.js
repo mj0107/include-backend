@@ -1,7 +1,7 @@
 const db = require('../config/database');
 
 const MEMBER = {
-    getAll : function(result) {
+    getAll : (result) => {
         db.getConnection((err, connection) => {
             if(!err) {
                 let sql = `SELECT * FROM member_board`;
@@ -24,7 +24,8 @@ const MEMBER = {
         })
     },
 
-    getByidx : function(idx, result) {
+    getByidx : (idx, result) => {
+        console.log(idx);
         db.getConnection((err, connection) => {
             if(!err) {
                 let sql = `SELECT * FROM member_board WHERE ID_PK LIKE ${idx}`;
@@ -47,7 +48,7 @@ const MEMBER = {
         })
     },
     // 멤버들에 대한 데이터가
-    create : function(member, result) {
+    create : (member, result) => {
 
         let input = Object.values(member);
         console.log(input);
@@ -74,7 +75,7 @@ const MEMBER = {
         })
     },
 
-    modify : function(idx, data, result) {
+    modify : (idx, data, result) => {
 
         let updateData = Object.values(data);
 
@@ -102,7 +103,7 @@ const MEMBER = {
         })
     },
     
-    destroy : function(idx, result) {
+    destroy : (idx, result) => {
         db.getConnection((err, connection) => {
             if(!err) {
                 let sql = `DELETE FROM member_board WHERE ID_PK = ${idx}`;

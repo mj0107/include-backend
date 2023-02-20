@@ -23,9 +23,8 @@ const MEMBER = {
             }
         })
     },
-
+    
     getByidx : (idx, result) => {
-        console.log(idx);
         db.getConnection((err, connection) => {
             if(!err) {
                 let sql = `SELECT * FROM member_board WHERE ID_PK LIKE ${idx}`;

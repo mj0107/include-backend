@@ -2,7 +2,6 @@ const db = require('../config/database');
 
 const ACTIVITY = {
     getActivityByPeriod : (data, result) => {
-
         let period = {
             year : Object.values(data)[0],
             semester : Object.values(data)[1]
@@ -32,7 +31,31 @@ const ACTIVITY = {
         })
     },
 
-    create : function(activity, result) {
+    getActivityById : (idx, result) => {
+        db.getConnection((err, connection) => {
+            if(!err) {
+                let sql = `SELECT YEAR, SEMESTER, DETAILS, TITLE, COMPLETE FROM ACTIVITY_BOARD_TB
+                           WHERE ID_PK LIKE ${idx}`;
+                connection.query(sql, (err, res) => {
+                    connection.release();
+
+                    if(err) {
+                        console.log("sql error " + err);
+                        result(null, err);
+                        return ;
+                    }
+                    result(null, res);
+                    return ;
+                })
+            }
+            else    {
+                console.log("mysql connection error " + err);
+                throw err;
+            }
+        })
+    },
+
+    create : (activity, result) => {
 
         let input = Object.values(activity);
 
@@ -58,7 +81,7 @@ const ACTIVITY = {
         })
     },
 
-    modify : function(idx, data, result) {
+    modify : (idx, data, result) => {
 
         let updateData = Object.values(data);
 
@@ -86,7 +109,7 @@ const ACTIVITY = {
         })
     },
 
-    destroy : function(idx, result) {
+    destroy : (idx, result) => {
         db.getConnection((err, connection) => {
             if(!err) {
                 let sql = `DELETE FROM ACTIVITY_BOARD_TB WHERE ID_PK = ${idx}`;

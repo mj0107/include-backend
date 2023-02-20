@@ -32,26 +32,29 @@ const ADMIN = {
     //로그인 구현
     signin : {
         findAdmin : (adminId) => {
-            db.getConnection((err, connection) => {
-                if(!err) {
-                    let sql = `SELECT * FROM admin_information
-                               WHERE admin_id LIKE ${adminId}`;
-                    connection.query(sql, (err, res) => {
-                        connection.release();
+            return new Promise((resolve, reject) => {
+                db.getConnection((err, connection) => {
+                    if (!err) {
+                        let sql = `SELECT * FROM admin_information
+                                   WHERE admin_id LIKE ${adminId}`;
     
-                        if(err) {
-                            console.log("sql error " + err);
-                            return err ;
-                        }
-                        return res;
-                    })
-                }
-                else    {
-                    console.log("mysql connection error " + err);
-                    throw err;
-                }
+                        connection.query(sql, (err, data) => {
+                            connection.release();
+    
+                            if (err) {
+                                console.log("sql error " + err);
+                                reject(err);
+                            }
+                            resolve(data);
+                        })
+                    }
+                    else {
+                        console.log("mysql connection error" + err);
+                        throw err;
+                    }
+                });
             })
-        },
+        }
     }
 }
 

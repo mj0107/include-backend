@@ -2,115 +2,48 @@ const express = require("express");
 const router = express.Router();
 const MEMBER = require('../model/member');
 
-// http://localhost:8080/member/:reservedWord
-router.get('/:reservedWord', async(req, res) => {
-    //html
-    // let result = {
-    //     code : 404,
-    //     message : "Not found"
-    // }
-    
-    if(isNaN(req.params.reservedWord))  {
-        (req.params.reservedWord === 'create') 
-        ? res.render('member/create') //혹시 원하는 페이지로 이동하지 않는다면 여길 손봐주세요
-        : (req.params.reservedWord === 'update')
-        ? res.render('member/update')
-        : (req.params.reservedWord === 'list')
-        ? await MEMBER.getAll((err, data) => {
-            try {
-                res.render('member/list', { data })
-            }
-            catch(err)  {
-                console.error("router error " + err);
-                res.status(503);
-            }
-        })
-        : res.json(result)
-    }
-    else    {
-        await MEMBER.getByidx(req.params.reservedWord, (err, data) => {
-            try {
-                res.json(data);
-                //res.render('member/detail', {data});
-            }
-            catch(err) {
-                console.error("router error " + err);
-                res.json(result);
-            }
-        })
-    }
+//등록 멤버 확인 전체&특정
+router.get('/list', async (req, res) => {
 
-    //react
-    let result = {
-        code : 404,
-        message : "Not found"
-    }
+    let id = req.query.idx;
+    let number = Object.values(req.query);
 
-    //list 문자열이 입력된다면
-    //http://localhost:8080/member
-    if(isNaN(req.params.reservedWord))  {
-        (req.params.reservedWord === 'list')
-        ? await MEMBER.getAll((err, data) => {
+    if (!(id)) {
+        // http://localhost:8080/member/list
+        await MEMBER.getAll((err, data) => {
             try {
                 res.json(data);
             }
-            catch(err)  {
-                console.error("router error " + err);
-                res.json(result);
+            catch (err) {
+                //추가로 뭘 반환하지?
+                console.log("member list router error " + err);
             }
         })
-        : res.json(result)
     }
-    else    {
-        await MEMBER.getByidx(req.params.idx, (err, data) => {
+    else if (id) {
+        // http://localhost:8080/member/list?idx=
+        await MEMBER.getByidx(number, (err, data) => {
             try {
-                res.json(data);
+                if (data.length === 0)
+                    res.status(404).json({ message: "Not Found" });
+                else
+                    res.json(data);
             }
-            catch(err) {
-                console.error("router error " + err);
-                res.json(result);
+            catch (err) {
+                console.log("specific member  router error " + err);
             }
         })
     }
-})
+    else
+        res.status(400).json({ message: "Forbidden" });
+});
 
-// http:localhost:8080/member/create
-router.post('/create', async(req, res) => {
-    
-    //로그인되어있는게 맞는지, 그렇지 않다면 list로 되돌아가게끔
+//등록
+// http://localhost:8080/post
+router.post('/post', async (req, res) => {
 
     let registerInfo = {
-        idx: req.body.idx,
         studentID: req.body.studentID,
-        name: req.body.name,
-        first_track: req.body.first_track,
-        second_track: req.body.second_track,
-        git_hub: req.body.git_hub,
-        email: req.body.email,
-        graduation: 0   
-    }
-
-    await MEMBER.create(registerInfo, (err, data) => {
-        try {
-            res.json(data);
-        }
-        catch(err)  {
-            console.error(err);
-        }
-    })
-})
-
-//CRUD
-
-//Read - select, get
-//Create - insert, post
-//Update - update, put
-
-//update
-// http://localhost:8080/member/update/:idx
-router.put('/:idx', async(req, res) => {
-
-    let member = {
         name: req.body.name,
         first_track: req.body.first_track,
         second_track: req.body.second_track,
@@ -119,27 +52,64 @@ router.put('/:idx', async(req, res) => {
         graduation: 0
     }
 
-    await MEMBER.modify(req.params.idx, member, (err, data) => {
+    await MEMBER.create(registerInfo, (err, data) => {
         try {
             res.json(data);
         }
-        catch(err)  {
-            console.error(err);
+        catch (err) {
+            console.error("member post router error " + err);
+            res.status(500).json({ message: "Internal Server Error" });
         }
     })
 })
 
-// http://localhost:8080/member/delete/:idx
-router.delete('/:idx', async(req, res) => {
-    
-    await MEMBER.destroy(req.params.idx, (err, data) => {
+// http://localhost:8080/post?idx=
+router.put('/post', async (req, res) => {
+    let id = req.query.idx;
+
+    let updateInfo = {
+        name: req.body.name,
+        first_track: req.body.first_track,
+        second_track: req.body.second_track,
+        git_hub: req.body.git_hub,
+        email: req.body.email,
+        graduation: req.body.graduation
+    }
+
+    if (id) {
+        await MEMBER.modify(id, updateInfo, (err, data) => {
+            try {
+                res.json({
+                    title: "modify processing",
+                    message: "Successfully modify."
+                })
+            }
+            catch (err) {
+                console.log("member modify router error " + err);
+                res.status(500).json({ message: "Internal Server Error" });
+            }
+        })
+    }
+    else
+        res.status(400).json({ message: "Forbidden" });
+})
+
+// http://localhost:8080/member/list?idx=
+router.delete('/list', async (req, res) => {
+    let id = req.query.idx;
+
+    await MEMBER.destroy(id, (err, data) => {
         try {
-            res.json(data);
+            res.json({
+                title: "delete processing",
+                message: "Successfully deleted."
+            })
         }
-        catch(err) {
-            console.error(err);
+        catch (err) {
+            console.log("member delete router error " + err);
+            res.status(500).json({ message: "Internal Server Error" });
         }
     })
 })
 
-module.exports = router
+module.exports = router;

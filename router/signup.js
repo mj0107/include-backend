@@ -3,15 +3,10 @@ const router = express.Router();
 const admin = require('../model/admin');
 const bcrypt = require('bcrypt');
 
-router.get('/', async(req, res) => {
-    res.render('signup/signup.html');
-})
-
-
-// {
-//     "id" : "Admin",
-//     "pwd" : 1234
-// }
+// http://localhost:8080/signup
+// router.get('/', async(req, res) => {
+//     res.render('signup/signup.html');
+// })
 
 // http://localhost:8080/signup
 router.post('/', async(req, res) => {

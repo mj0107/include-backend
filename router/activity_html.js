@@ -33,7 +33,7 @@ router.get('/list', async(req, res) => {
         await activity.getActivityById(values, (err, data) => {
             try {
                 if (data !== null)  {
-                    if(data.length === 0)
+                    if(data.length === 0)  
                         res.status(404).json({ message: "Not Found" });
                     else
                         res.render('activity/detail', { activityById : data[0] });
@@ -42,7 +42,7 @@ router.get('/list', async(req, res) => {
                     res.json(data);
             }
             catch (err) {
-                console.log("specific member router error " + err);
+                console.log("specific activity router error " + err);
             }
         })
     }
@@ -60,12 +60,42 @@ router.get('/list', async(req, res) => {
                     res.json(data);
             }
             catch (err) {
-                console.log("specific member router error " + err);
+                console.log("specific activity router error " + err);
             }
         })
     }
     else
         res.status(400).json({ message: "Forbidden" });
+})
+
+router.get('/post', async(req, res) => {
+    let key = Object.keys(req.query);
+    let value = Object.values(req.query);
+    let compare = Boolean;
+
+    if(key.length === 1)
+        compare = ([ key ].toString() === [ 'idx' ].toString())
+
+    if(key.length === 1 && compare) {
+        // http://localhost:8080/activity/post?idx=
+        await activity.getActivityById(value, (err, data) => {
+            try {
+                if(data !== null)    {
+                    console.log(data);
+                    res.render('activity/post', { data : data });
+                }
+                else if(err !== null)
+                    res.json(err);
+            }
+            catch(err)  {
+                console.log("activity post router error " + err);
+            }
+        })
+    }
+    else if(key.length === 0)
+        res.render('activity/post');
+    else
+        res.redirect('/activity/list');
 })
 
 router.post('/post', async(req, res) => {
@@ -113,7 +143,7 @@ router.post('/post', async(req, res) => {
         await activity.create(activityInfo, (err, data) => {
             try {
                 if(data !==  null)    {
-                    res.redirect('back');
+                    res.redirect(`activity/list?year=${activityInfo.year}&semester=${activityInfo.semester}`);
                 }
                 else if(err !== null)
                     res.json(err);
@@ -127,20 +157,20 @@ router.post('/post', async(req, res) => {
         res.status(404).json({ message : "Not found" });
 })
 
-// http://localhost"8080/activity/list?idx=
+// http://localhost:8080/activity/list?idx=
 router.delete('/list', async(req, res) => {
     let id = req.query.idx;
 
     await activity.destroy(id, (err, data) => {
         try {
             if(data !== null) {
-                res.redirect('back');
+                res.redirect('/activity/list');
             }
             else if(err !== null)
                 res.json(err);
         }
         catch (err) {
-            console.log("member delete router error " + err);
+            console.log("activity delete router error " + err);
             res.status(500).json({ message: "Internal Server Error" });
         }
     })

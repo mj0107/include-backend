@@ -16,7 +16,7 @@ module.exports = () => {
 
     passport.use(new LocalStrategy({
         usernameField: 'id',
-        passwordField: 'pw' 
+        passwordField: 'pwd' 
     }, (id, pwd, done) => {
             admin.signin.findAdmin(id)
                 .then((user) => {

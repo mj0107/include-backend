@@ -1,6 +1,30 @@
 const db = require('../config/database');
 
 const ACTIVITY = {
+    getAll : (result) => {
+        db.getConnection((err, connection) => {
+            if(!err) {
+                let sql = `SELECT YEAR, SEMESTER, TITLE, COMPLETE
+                           FROM ACTIVITY_BOARD_TB`;
+                connection.query(sql, (err, res) => {
+                    connection.release();
+
+                    if(err) {
+                        console.log("sql error " + err);
+                        result(err, null);
+                        return ;
+                    }
+                    result(null, res);
+                    return ;
+                })
+            }
+            else    {
+                console.log("mysql connection error " + err);
+                throw err;
+            }
+        })
+    },
+
     getActivityByPeriod : (data, result) => {
         let period = {
             year : data[0],
@@ -9,7 +33,7 @@ const ACTIVITY = {
 
         db.getConnection((err, connection) => {
             if(!err) {
-                let sql = `SELECT DETAILS, TITLE FROM ACTIVITY_BOARD_TB
+                let sql = `SELECT YEAR, SEMESTER, DETAILS, TITLE, COMPLETE FROM ACTIVITY_BOARD_TB
                            WHERE YEAR LIKE ${period.year}
                            AND SEMESTER LIKE ${period.semester}`;
                 connection.query(sql, (err, res) => {

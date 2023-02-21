@@ -9,15 +9,15 @@ router.get('/list', async (req, res) => {
     let values = Object.values(req.query);
 
     let compare = Boolean;
-    if (keys.length === 2)
-        compare = ([ keys[0], keys[1] ].toString() === [ 'year', 'semester' ].toString())
 
+    if (keys.length === 0) /// ??????????????
+        compare = true;
     else if(keys.length === 1)
         compare = ([ keys[0] ].toString() === [ 'idx' ].toString())
     
-    if (keys.length === 2 && compare) {
-        // http://localhost:8080/activity/list?year= &semester=
-        await activity.getActivityByPeriod(values, (err, data) => {
+    if (keys.length === 0 && compare) {
+        // http://localhost:8080/activity/list
+        await activity.getAll((err, data) => {
             try {
                 if(data !== null)
                     res.json(data);
@@ -25,7 +25,6 @@ router.get('/list', async (req, res) => {
                     res.json(err);
             }
             catch (err) {
-                //추가로 뭘 반환하지?
                 console.log("activity list by period router error " + err);
                 res.status(503).json({ message : "internal server error" });
             }

@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const ACTIVITY = require('../model/activity');
+const activity = require('../model/activity');
 
 // 전체 & 부분
-
-
 router.get('/list', async(req, res) => {
     let keys = Object.keys(req.query);
     let values = Object.values(req.query);
@@ -48,6 +46,24 @@ router.get('/list', async(req, res) => {
             }
         })
     }
+    else if (keys.length === 0)  {
+        // http://localhost:8080/activity/list
+        await activity.getAll((err, data) => {
+            try {
+                if (data !== null)  {
+                    if(data.length === 0)
+                        res.status(404).json({ message: "Not Found" });
+                    else
+                        res.render('activity/list', { activityListAll : data });
+                }
+                else if(err !== null)
+                    res.json(data);
+            }
+            catch (err) {
+                console.log("specific member router error " + err);
+            }
+        })
+    }
     else
         res.status(400).json({ message: "Forbidden" });
 })
@@ -59,10 +75,10 @@ router.post('/post', async(req, res) => {
 
     if(key.length === 1)
         compare = ([ key ].toString() === [ 'idx' ].toString())
-    else if(key.length === 0)
+    else if(key.length === 0) // ???????????
         compare = true;
 
-    if(compare) {
+    if(key.length === 1 && compare) {
         // http://localhost:8080/activity/post?idx=
         let updateInfo = {
             year : req.body.year,
@@ -84,7 +100,7 @@ router.post('/post', async(req, res) => {
             }
         })
     }
-    else if(compare)    {
+    else if(key.length === 0 && compare)    {
         // http://localhost:8080/activity/post
         let activityInfo = {
             year : req.body.year,

@@ -79,10 +79,14 @@ router.put('/post', async (req, res) => {
     if (id) {
         await MEMBER.modify(id, updateInfo, (err, data) => {
             try {
-                res.json({
-                    title: "modify processing",
-                    message: "Successfully modify."
-                })
+                if(data)    {
+                    res.json({
+                        title: "modify processing",
+                        message: "Successfully modify."
+                    })
+                }
+                else if (err)
+                    res.json(err);
             }
             catch (err) {
                 console.log("member modify router error " + err);

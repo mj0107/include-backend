@@ -66,7 +66,7 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'build')));
 
 app.use('/member', memberBoardRouter);
-//app.use('/activity', activityBoardRouter);
+app.use('/activity', activityBoardRouter);
 app.use('/signup', signupRouter);
 app.use('/', signinRouter);
 

@@ -41,7 +41,7 @@ const ACTIVITY = {
 
                     if(err) {
                         console.log("sql error " + err);
-                        result(null, err);
+                        result(err, null);
                         return ;
                     }
                     result(null, res);
@@ -58,7 +58,6 @@ const ACTIVITY = {
     create : (activity, result) => {
 
         let input = Object.values(activity);
-
         db.getConnection((err, connection) => {
             if(!err) {
                 let sql = `INSERT INTO ACTIVITY_BOARD_TB VALUES ( ID_PK, ? )`;
@@ -67,7 +66,7 @@ const ACTIVITY = {
 
                     if(err) {
                         console.log("sql error " + err);
-                        result(null, err);
+                        result(err, null);
                         return ;
                     }
                     result(null, res);
@@ -95,7 +94,7 @@ const ACTIVITY = {
 
                     if(err) {
                         console.log("sql error " + err);
-                        result(null, err);
+                        result(err, null);
                         return ;
                     }
                     result(null, res);
@@ -118,7 +117,7 @@ const ACTIVITY = {
 
                     if(err) {
                         console.log("sql error " + err);
-                        result(null, err);
+                        result(err, null);
                         return ;
                     }
                     result(null, res);

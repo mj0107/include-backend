@@ -10,7 +10,6 @@ const bcrypt = require('bcrypt');
 
 // http://localhost:8080/signup
 router.post('/', async(req, res) => {
-    
     let adminData = {
         id : req.body.id,
         pwd : req.body.pwd

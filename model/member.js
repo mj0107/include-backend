@@ -88,11 +88,9 @@ const MEMBER = {
 
                     if(err) {
                         console.log("sql error " + err);
-                        result(null, err);
-                        return ;
+                        return  result(err, null);
                     }
-                    result(null, res);
-                    return ;
+                    return  result(null, res);
                 })
             }
             else    {

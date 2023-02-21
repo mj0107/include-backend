@@ -3,8 +3,8 @@ const db = require('../config/database');
 const ACTIVITY = {
     getActivityByPeriod : (data, result) => {
         let period = {
-            year : Object.values(data)[0],
-            semester : Object.values(data)[1]
+            year : data[0],
+            semester : data[1]
         }
 
         db.getConnection((err, connection) => {
@@ -17,7 +17,7 @@ const ACTIVITY = {
 
                     if(err) {
                         console.log("sql error " + err);
-                        result(null, err);
+                        result(err, null);
                         return ;
                     }
                     result(null, res);

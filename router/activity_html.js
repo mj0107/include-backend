@@ -82,7 +82,7 @@ router.get('/post', async(req, res) => {
             try {
                 if(data !== null)    {
                     console.log(data);
-                    res.render('activity/post', { data : data });
+                    res.render('activity/post', { idx : true, data : data[0] });
                 }
                 else if(err !== null)
                     res.json(err);
@@ -93,7 +93,7 @@ router.get('/post', async(req, res) => {
         })
     }
     else if(key.length === 0)
-        res.render('activity/post');
+        res.render('activity/post', { idx : false });
     else
         res.redirect('/activity/list');
 })

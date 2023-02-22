@@ -36,8 +36,8 @@ const ADMIN = {
                 db.getConnection((err, connection) => {
                     if (!err) {
                         let sql = `SELECT * FROM admin_information
-                                   WHERE admin_id LIKE ${adminId}`;
-    
+                                   WHERE id LIKE "${adminId}"`;
+
                         connection.query(sql, (err, data) => {
                             connection.release();
     

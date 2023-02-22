@@ -4,13 +4,13 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 const passportConfig = require('./auth/localStrategy');
 const methodOverride = require('method-override');
+const flash = require('connect-flash');
 require('dotenv').config();
 
 const app = express();
+passportConfig();
 app.use(methodOverride('_method'));
 
-//얘 뭐임?
-//const logger = require('morgan');
 let session = require('express-session');
 let SQLStore = require('express-mysql-session')(session);
 
@@ -24,15 +24,15 @@ let options = {
 
 let sessionStore = new SQLStore(options);
 
-
+app.use(flash());
 app.use('/public',express.static(path.join(__dirname, 'public')));
 
 //html
-const memberBoardRouter = require('./router/memberRegister_html');
-const activityBoardRouter= require('./router/activity_html');
+// const memberBoardRouter = require('./router/memberRegister_html');
+// const activityBoardRouter= require('./router/activity_html');
 // react
-// const memberBoardRouter = require('./router/memberRegister_react');
-// const activityBoardRouter = require('./router/activity_react');
+const memberBoardRouter = require('./router/memberRegister_react');
+const activityBoardRouter = require('./router/activity_react');
 const signinRouter = require('./router/signin');
 const signupRouter = require('./router/signup');
 
@@ -44,26 +44,30 @@ app.get('/', (req, res) => {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use(session({
     secret:process.env.secret,
     resave : false,
     saveUninitialized : true,
-    store : sessionStore
+    store : sessionStore,
+    cookie: {
+        httpOnly: true,
+        secure: false,
+    }
 }))
 
 app.use(passport.initialize());
 app.use(passport.session());
-passportConfig();
 
 //html
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine','ejs');
-app.engine('html', require('ejs').__express);
+// app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine','ejs');
+// app.engine('html', require('ejs').__express);
 
 //react
-// let cors = require('cors');
-// app.use(cors());
-// app.use(express.static(path.join(__dirname, 'build')));
+let cors = require('cors');
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'build')));
 
 app.use('/member', memberBoardRouter);
 app.use('/activity', activityBoardRouter);

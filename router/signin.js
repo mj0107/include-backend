@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const passport = require('passport');
-const passportConfig = require('../auth/localStrategy');
 const authhepler = require('../auth/_helper');
 
 //html
@@ -11,19 +10,28 @@ const authhepler = require('../auth/_helper');
 // })
 
 // http://localhost:8080/login
-router.post('/login', passport.authenticate('local', {
-    //html
-    // successRedirect : '/',
-    // failureRedirect : '/login',
+// router.post('/login', passport.authenticate('local', {
+//     //html
+//     // successRedirect : '/',
+//     // failureRedirect : '/login',
 
-    //react
-    //error msg callback
-    failureFlash : true,
-    //성공했을 때 상태값 전달 --> 이렇게 전달하는게 좋을려나
-    successFlash : 'Welcome!'
-  }), (req, res) => {
-    res.redirect('/');
+//     //react
+//     failureFlash : true,
+//     successFlash : 'Welcome!'
+//   }), (req, res) => {
+//     console.log(req);
+//     res.redirect('/');
+// });
+
+// http://localhost:8080/login
+router.post('/login', authhepler.isNotLoggedIn, (req, res, next) => {
+    console.log(req.body);
+    passport.authenticate('local', {
+        failureFlash : true,
+        successFlash : 'Welcome!'
+    }), (req, res, next);
 });
+
 
 //로그아웃 페이지는 따로 필요할 거 같지 않은데, 머릿속에 난장판이라 안돌아가요 필요하면 말해주세요
 

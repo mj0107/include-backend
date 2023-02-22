@@ -40,7 +40,7 @@ router.get('/list', async (req, res) => {
                     res.json(data);
             }
             catch (err) {
-                console.log("specific member router error " + err);
+                console.log("specific activity router error " + err);
             }
         })
     }
@@ -129,7 +129,7 @@ router.delete('/list', async(req, res) => {
                 res.json(err);
         }
         catch (err) {
-            console.log("member delete router error " + err);
+            console.log("activity delete router error " + err);
             res.status(500).json({ message: "Internal Server Error" });
         }
     })

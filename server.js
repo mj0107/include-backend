@@ -1,31 +1,50 @@
 const express = require('express');
+const session = require('express-session');
 const path = require('path');
 const bodyParser = require('body-parser');
 const passport = require('passport');
-const passportConfig = require('./auth/localStrategy');
+const passportConfig = require('./passport/index');
 const methodOverride = require('method-override');
 const flash = require('connect-flash');
+const cookieParser = require('cookie-parser');
+
 require('dotenv').config();
 
 const app = express();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(session({
+    secret : process.env.secret,
+    resave : false,
+    saveUninitialized : false,
+    //store : sessionStore,
+    cookie: {
+        httpOnly: true,
+        secure: false,
+        maxAge: 1000 * 60 * 60
+    }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 passportConfig();
-app.use(methodOverride('_method'));
 
-let session = require('express-session');
-let SQLStore = require('express-mysql-session')(session);
+app.use(cookieParser(process.env.secret));
 
-let options = {
-    host: process.env.host,
-    port: '3306',
-    user: process.env.user,
-    password: process.env.password,
-    database: 'include'
-};
+app.set('port', process.env.PORT || 8080);
 
-let sessionStore = new SQLStore(options);
+//html
+// app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine','ejs');
+// app.engine('html', require('ejs').__express);
 
-app.use(flash());
-app.use('/public',express.static(path.join(__dirname, 'public')));
+//react
+let cors = require('cors');
+app.use(cors({ origin: true, credentials: true }))
+app.use(express.static(path.join(__dirname, 'build')));
 
 //html
 // const memberBoardRouter = require('./router/memberRegister_html');
@@ -36,43 +55,22 @@ const activityBoardRouter = require('./router/activity_react');
 const signinRouter = require('./router/signin');
 const signupRouter = require('./router/signup');
 
-app.set('port', process.env.PORT || 8080);
+app.use(methodOverride('_method'));
+
+app.use(flash());
+app.use('/public',express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
+    //res.render('home.html');
     res.header("Access-Control-Allow-Origin", "http://localhost:8080")
 })
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(session({
-    secret:process.env.secret,
-    resave : false,
-    saveUninitialized : true,
-    store : sessionStore,
-    cookie: {
-        httpOnly: true,
-        secure: false,
-    }
-}))
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-//html
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine','ejs');
-// app.engine('html', require('ejs').__express);
-
-//react
-let cors = require('cors');
-app.use(cors());
-app.use(express.static(path.join(__dirname, 'build')));
 
 app.use('/member', memberBoardRouter);
 app.use('/activity', activityBoardRouter);
 app.use('/signup', signupRouter);
-app.use('/', signinRouter);
+app.use('/login', signinRouter);
 
 app.listen(app.get('port'), (req, res) => {
     console.log(app.get('port'), "빈 포트에서 대기");

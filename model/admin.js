@@ -45,7 +45,7 @@ const ADMIN = {
                                 console.log("sql error " + err);
                                 reject(err);
                             }
-                            resolve(data);
+                            resolve(data[0]);
                         })
                     }
                     else {

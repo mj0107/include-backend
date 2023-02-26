@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const activity = require('../model/activity');
+const valid = require('../validator/data_valid');
 
 
 router.get('/list', async (req, res) => {
@@ -10,7 +11,7 @@ router.get('/list', async (req, res) => {
 
     let compare = Boolean;
 
-    if (keys.length === 0) /// ??????????????
+    if (keys.length === 0)
         compare = true;
     else if(keys.length === 1)
         compare = ([ keys[0] ].toString() === [ 'idx' ].toString())
@@ -48,19 +49,10 @@ router.get('/list', async (req, res) => {
         res.status(400).json({ message: "Forbidden" });
 });
 
-
 // http://localhost:8080/activity/post
-router.post('/post', async(req, res) => {
+router.post('/post', valid.CheckRegistActivityInfo, valid.errorCallback, async(req, res) => {
     
-    let activityInfo = {
-        year : req.body.year,
-        semester : req.body.semester,
-        details : req.body.details,
-        title : req.body.title,
-        complete : req.body.complete
-    }
-    
-    await activity.create(activityInfo, (err, data) => {
+    await activity.create(req.body, (err, data) => {
         try {
             if(data !==  null)    {
                 res.json({
@@ -77,7 +69,7 @@ router.post('/post', async(req, res) => {
     })
 })
 
-router.put('/post', async(req, res) => {
+router.put('/post', valid.CheckUpdateActivityInfo, valid.errorCallback, async(req, res) => {
     let key = Object.keys(req.query);
     let value = Object.values(req.query);
     let compare = Boolean;
@@ -86,15 +78,7 @@ router.put('/post', async(req, res) => {
         compare = ([ key ].toString() === [ 'idx' ].toString())
 
     if(compare) {
-        let updateInfo = {
-            year : req.body.year,
-            semester : req.body.semester,
-            details : req.body.details,
-            title : req.body.title,
-            complete : req.body.complete
-        }
-    
-        await activity.modify(value, updateInfo, (err, data) => {
+        await activity.modify(value, req.body, (err, data) => {
             try {
                 if(data !== null)    {
                     res.json({
@@ -119,17 +103,19 @@ router.delete('/list', async(req, res) => {
 
     await activity.destroy(id, (err, data) => {
         try {
-            if(data !== null) {
+            if(data !== null && data.affectedRow === 1)   {
                 res.json({
                     title: "delete processing",
                     message: "Successfully deleted."
                 })
             }
-            else if(err !== null)
+            else if(data !== null && data.affectedRow === 0)
+                res.status(404).json({ message : "Not found" });
+            else
                 res.json(err);
         }
         catch (err) {
-            console.log("activity delete router error " + err);
+            console.log("member delete router error " + err);
             res.status(500).json({ message: "Internal Server Error" });
         }
     })

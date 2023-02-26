@@ -18,7 +18,7 @@ router.get('/list', async(req, res) => {
         await activity.getActivityByPeriod(values, (err, data) => {
             try {
                 if(data !== null)
-                    res.render('activity/list', { activityListByPeriod : data });
+                    res.render('activity/list', { activityList : data });
                 else if(err !== null)
                     res.json(err);
             }
@@ -36,7 +36,7 @@ router.get('/list', async(req, res) => {
                     if(data.length === 0)  
                         res.status(404).json({ message: "Not Found" });
                     else
-                        res.render('activity/detail', { activityById : data[0] });
+                        res.render('activity/detail', { activityList : data[0] });
                 }
                 else if(err !== null)
                     res.json(data);
@@ -54,7 +54,7 @@ router.get('/list', async(req, res) => {
                     if(data.length === 0)
                         res.status(404).json({ message: "Not Found" });
                     else
-                        res.render('activity/list', { activityListAll : data });
+                        res.render('activity/list', { activityList : data });
                 }
                 else if(err !== null)
                     res.json(data);
@@ -93,7 +93,7 @@ router.get('/post', async(req, res) => {
         })
     }
     else if(key.length === 0)
-        res.render('activity/post', { idx : false });
+        res.render('activity/post', { idx : false, data : '' });
     else
         res.redirect('/activity/list');
 })
@@ -120,7 +120,7 @@ router.post('/post', async(req, res) => {
         await activity.modify(value, updateInfo, (err, data) => {
             try {
                 if(data !== null)    {
-                    res.redirect('back');
+                    res.redirect(`/activity/list?idx=${value}`);
                 }
                 else if(err !== null)
                     res.json(err);
@@ -143,7 +143,7 @@ router.post('/post', async(req, res) => {
         await activity.create(activityInfo, (err, data) => {
             try {
                 if(data !==  null)    {
-                    res.redirect(`activity/list?year=${activityInfo.year}&semester=${activityInfo.semester}`);
+                    res.redirect(`/activity/list?year=${activityInfo.year}&semester=${activityInfo.semester}`);
                 }
                 else if(err !== null)
                     res.json(err);

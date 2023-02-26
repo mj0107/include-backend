@@ -37,7 +37,7 @@ router.get('/:reservedWord', async (req, res) => {
             }
             // http://localhost:8080/post?type=create
             else if (key.length === 1 && key.toString() === 'type' && value.toString() === 'create')
-                res.render('member/post', { type: value.toString() });
+                res.render('member/post', { type : value.toString(), memberDetail : '' });
             else
                 res.status(400).json({ message: "Forbidden" });
         }

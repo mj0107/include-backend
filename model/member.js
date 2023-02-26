@@ -10,11 +10,9 @@ const MEMBER = {
 
                     if(err) {
                         console.log("sql error " + err);
-                        result(null, err);
-                        return ;
+                        return result(err, null);
                     }
-                    result(null, res);
-                    return ;
+                    return  result(null, res);
                 })
             }
             else    {
@@ -33,11 +31,9 @@ const MEMBER = {
 
                     if(err) {
                         console.log("sql error " + err);
-                        result(null, err);
-                        return ;
+                        return result(err, null);
                     }
-                    result(null, res);
-                    return ;
+                    return result(null, res);
                 })
             }
             else    {
@@ -60,11 +56,9 @@ const MEMBER = {
 
                     if(err) {
                         console.log("sql error " + err);
-                        result(null, err);
-                        return ;
+                        return result(err, null);
                     }
-                    result(null, res);
-                    return ;
+                    return result(null, res);
                 })
             }
             else    {
@@ -85,10 +79,9 @@ const MEMBER = {
                            WHERE ID_PK = ${idx}`;
                 connection.query(sql, updateData, (err, res) => {
                     connection.release();
-
                     if(err) {
                         console.log("sql error " + err);
-                        return  result(err, null);
+                        return result(err, null);
                     }
                     return  result(null, res);
                 })
@@ -109,11 +102,9 @@ const MEMBER = {
 
                     if(err) {
                         console.log("sql error " + err);
-                        result(null, err);
-                        return ;
+                        return result(err, null);
                     }
-                    result(null, res);
-                    return ;
+                    return result(null, res);
                 })
             }
             else    {

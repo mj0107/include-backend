@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const MEMBER = require('../model/member');
+const valid = require('../validator/data_valid');
+const { isLoggedIn } = require('./middleware');
+
 
 //등록 멤버 확인 전체&특정
 router.get('/list', async (req, res) => {
@@ -12,10 +15,14 @@ router.get('/list', async (req, res) => {
         // http://localhost:8080/member/list
         await MEMBER.getAll((err, data) => {
             try {
-                res.json(data);
+                if(data !== null)
+                    res.json(data);
+                else
+                    res.json(err);
             }
             catch (err) {
                 //추가로 뭘 반환하지?
+                res.json(err);
                 console.log("member list router error " + err);
             }
         })
@@ -24,8 +31,12 @@ router.get('/list', async (req, res) => {
         // http://localhost:8080/member/list?idx=
         await MEMBER.getByidx(number, (err, data) => {
             try {
-                if (data.length === 0)
-                    res.status(404).json({ message: "Not Found" });
+                if(data !== null) {
+                    if (data.length === 0)
+                        res.status(404).json({ message: "Not Found" });
+                    else
+                        res.json(data);
+                }
                 else
                     res.json(data);
             }
@@ -39,22 +50,19 @@ router.get('/list', async (req, res) => {
 });
 
 //등록
-// http://localhost:8080/post
-router.post('/post', async (req, res) => {
+// http://localhost:8080/member/post
+router.post('/post', valid.CheckRegisterInfo, valid.errorCallback, isLoggedIn, async(req, res) => {
 
-    let registerInfo = {
-        studentID: req.body.studentID,
-        name: req.body.name,
-        first_track: req.body.first_track,
-        second_track: req.body.second_track,
-        git_hub: req.body.git_hub,
-        email: req.body.email,
-        graduation: 0
-    }
-
-    await MEMBER.create(registerInfo, (err, data) => {
+    await MEMBER.create(req.body, (err, data) => {
         try {
-            res.json(data);
+            if(data !== null)   {
+                res.json({
+                    title: "post processing",
+                    message: "Successfully post."
+                })
+            }
+            else
+                res.json(err);       
         }
         catch (err) {
             console.error("member post router error " + err);
@@ -63,29 +71,20 @@ router.post('/post', async (req, res) => {
     })
 })
 
-// http://localhost:8080/post?idx=
-router.put('/post', async (req, res) => {
+// http://localhost:8080/member/post?idx=
+router.put('/post', valid.CheckUpdateInfo, valid.errorCallback, isLoggedIn, async(req, res) => {
     let id = req.query.idx;
 
-    let updateInfo = {
-        name: req.body.name,
-        first_track: req.body.first_track,
-        second_track: req.body.second_track,
-        git_hub: req.body.git_hub,
-        email: req.body.email,
-        graduation: req.body.graduation
-    }
-
     if (id) {
-        await MEMBER.modify(id, updateInfo, (err, data) => {
+        await MEMBER.modify(id, req.body, (err, data) => {
             try {
-                if(data)    {
+                if(data !== null)    {
                     res.json({
                         title: "modify processing",
                         message: "Successfully modify."
                     })
                 }
-                else if (err)
+                else
                     res.json(err);
             }
             catch (err) {
@@ -99,15 +98,21 @@ router.put('/post', async (req, res) => {
 })
 
 // http://localhost:8080/member/list?idx=
-router.delete('/list', async (req, res) => {
+router.delete('/list', isLoggedIn, async (req, res) => {
     let id = req.query.idx;
 
     await MEMBER.destroy(id, (err, data) => {
         try {
-            res.json({
-                title: "delete processing",
-                message: "Successfully deleted."
-            })
+            if(data !== null && data.affectedRow === 1)   {
+                res.json({
+                    title: "delete processing",
+                    message: "Successfully deleted."
+                })
+            }
+            else if(data !== null && data.affectedRow === 0)
+                res.status(404).json({ message : "Not found" });
+            else
+                res.json(err);
         }
         catch (err) {
             console.log("member delete router error " + err);

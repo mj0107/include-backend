@@ -108,7 +108,7 @@ const ACTIVITY = {
         db.getConnection((err, connection) => {
             if(!err) {
                 let sql = `UPDATE ACTIVITY_BOARD_TB set
-                           YEAR = ?, SEMESTER = ?, DETAILS = ?, TITLE = ?
+                           YEAR = ?, SEMESTER = ?, DETAILS = ?, TITLE = ?, COMPLETE = ?
                            WHERE ID_PK = ${idx}`;
                 connection.query(sql, updateData, (err, res) => {
                     connection.release();

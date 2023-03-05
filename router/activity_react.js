@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const activity = require('../model/activity');
 const valid = require('../validator/data_valid');
+const { isLoggedIn } = require('./middleware');
 
 
 router.get('/list', async (req, res) => {
@@ -50,9 +51,17 @@ router.get('/list', async (req, res) => {
 });
 
 // http://localhost:8080/activity/post
-router.post('/post', valid.CheckRegistActivityInfo, valid.errorCallback, async(req, res) => {
+router.post('/post', valid.CheckActivityInfo, valid.errorCallback, isLoggedIn, async(req, res) => {
     
-    await activity.create(req.body, (err, data) => {
+    let inputData = {
+        year : req.body.year,
+        semester : req.body.semester, 
+        details : req.body.details,
+        title : req.body.title,
+        complete : req.body.complete
+    }
+
+    await activity.create(inputData, (err, data) => {
         try {
             if(data !==  null)    {
                 res.json({
@@ -69,7 +78,7 @@ router.post('/post', valid.CheckRegistActivityInfo, valid.errorCallback, async(r
     })
 })
 
-router.put('/post', valid.CheckUpdateActivityInfo, valid.errorCallback, async(req, res) => {
+router.put('/post', valid.CheckActivityInfo, valid.errorCallback, isLoggedIn, async(req, res) => {
     let key = Object.keys(req.query);
     let value = Object.values(req.query);
     let compare = Boolean;
@@ -78,7 +87,16 @@ router.put('/post', valid.CheckUpdateActivityInfo, valid.errorCallback, async(re
         compare = ([ key ].toString() === [ 'idx' ].toString())
 
     if(compare) {
-        await activity.modify(value, req.body, (err, data) => {
+
+        let updateData = {
+            year : req.body.year,
+            semester : req.body.semester, 
+            details : req.body.details,
+            title : req.body.title,
+            complete : req.body.complete
+        }
+
+        await activity.modify(value, updateData, (err, data) => {
             try {
                 if(data !== null)    {
                     res.json({
@@ -98,7 +116,7 @@ router.put('/post', valid.CheckUpdateActivityInfo, valid.errorCallback, async(re
         res.status(404).json({ message : "Not found" });
 })
 
-router.delete('/list', async(req, res) => {
+router.delete('/list', isLoggedIn, async(req, res) => {
     let id = req.query.idx;
 
     await activity.destroy(id, (err, data) => {

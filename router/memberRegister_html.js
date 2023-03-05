@@ -1,121 +1,51 @@
 const express = require("express");
 const router = express.Router();
-const MEMBER = require('../model/member');
+const member = require('../model/member');
+const valid = require('../validator/data_valid');
+const { isLoggedIn } = require('./middleware');
 
-// http://localhost:8080/member/:reservedWord
-router.get('/:reservedWord', async (req, res) => {
-    //html
-    if (isNaN(req.params.reservedWord)) {
-        if (req.params.reservedWord === 'post') {
+// 전체 & 부분
+router.get('/list', async(req, res) => {
+    let keys = Object.keys(req.query);
+    let values = Object.values(req.query);
 
-            let query = req.query;
-            let key = Object.keys(query);
-            let value = Object.values(query);
-
-            if (key.length === 2) {
-                if (key[0] === 'type' && key[1] === 'idx' && value[0] === 'update') {
-                    if (!isNaN(value[1])) {
-                        await MEMBER.getByidx(value[1], (err, data) => {
-                            try {
-                                if (data.length === 0)
-                                    res.status(404).json({ message: "Not Found" });
-                                // http://localhost:8080/post?type=update&idx=
-                                else
-                                    res.render('member/post', { type: value[0], memberDetail: data[0] });
-                            }
-                            catch (err) {
-                                console.error("router error " + err);
-                                res.status(404).json({ message: "Not Found" });
-                            }
-                        })
-                    }
+    let compare = Boolean;
+    if(keys.length === 1)
+        compare = ([ keys[0] ].toString() === [ 'idx' ].toString())
+    
+    if (keys.length === 1 && compare) {
+        // http://localhost:8080/member/list?idx=
+        await member.getByidx(values, (err, data) => {
+            try {
+                if (data !== null)  {
+                    if(data.length === 0)  
+                        res.status(404).json({ message: "Not Found" });
                     else
-                        res.status(400).json({ message: "Forbidden" });
+                        res.render('member/detail', { memberDetail : data[0] });
                 }
-                else
-                    res.status(400).json({ message: "Forbidden" });
-            }
-            // http://localhost:8080/post?type=create
-            else if (key.length === 1 && key.toString() === 'type' && value.toString() === 'create')
-                res.render('member/post', { type : value.toString(), memberDetail : '' });
-            else
-                res.status(400).json({ message: "Forbidden" });
-        }
-        // http://localhost:8080/list
-        else if (req.params.reservedWord === 'list') {
-            await MEMBER.getAll((err, data) => {
-                try {
-                    res.render('member/list', { memberList: data });
-                }
-                catch (err) {
-                    console.error("router error " + err);
-                    res.status(503);
-                }
-            })
-        }
-    }
-    else {
-        // http://localhost:8080/:idx
-        await MEMBER.getByidx(req.params.reservedWord, (err, data) => {
-            try {
-                if (data.length === 0)
-                    res.status(404).json({ message: "Not Found" });
-                else
-                    res.render('member/detail', { memberDetail: data[0] });
+                else if(err !== null)
+                    res.json(data);
             }
             catch (err) {
-                console.error("router error " + err);
-                res.status(500).json({ message: "Internal Server Error" });
+                console.log("specific member router error " + err);
             }
         })
     }
-})
-
-// http://localhost:8080/member/post?type=create
-//http://localhost:8080/member/post?type=update&idx=
-
-// http:localhost:8080/member/post?type=create
-router.post('/post', async (req, res) => {
-
-    //html
-    let key = Object.keys(req.query);
-    let value = Object.values(req.query);
-
-    if (key.length === 1 && key.toString() === 'type' && value.toString() === 'create') {
-        let registerInfo = {
-            studentID: req.body.studentID,
-            name: req.body.name,
-            first_track: req.body.first_track,
-            second_track: req.body.second_track,
-            git_hub: req.body.git_hub,
-            email: req.body.email,
-            graduation: 0
-        }
-        await MEMBER.create(registerInfo, (err, data) => {
+    else if (keys.length === 0)  {
+        // http://localhost:8080/member/list
+        await member.getAll((err, data) => {
             try {
-                res.redirect('/member/list');
+                if (data !== null)  {
+                    if(data.length === 0)
+                        res.status(404).json({ message: "Not Found" });
+                    else
+                        res.render('member/list', { memberList : data });
+                }
+                else if(err !== null)
+                    res.json(data);
             }
             catch (err) {
-                console.error(err);
-            }
-        })
-    }
-    else if (key.length === 2 && key[0].toString() === 'type' && value[0].toString() === 'update')  {
-        let member = {
-            name: req.body.name,
-            first_track: req.body.first_track,
-            second_track: req.body.second_track,
-            git_hub: req.body.git_hub,
-            email: req.body.email,
-            graduation: 0
-        }
-        await MEMBER.modify(value[1], member, (err, data) => {
-            try {
-
-                res.redirect(`/member/${value[1]}`);
-            }
-            catch (err) {
-                console.error(err);
+                console.log("specific member router error " + err);
             }
         })
     }
@@ -123,16 +53,116 @@ router.post('/post', async (req, res) => {
         res.status(400).json({ message: "Forbidden" });
 })
 
-router.delete('/:idx', async (req, res) => {
+router.get('/post', isLoggedIn, async(req, res) => {
+    let key = Object.keys(req.query);
+    let value = Object.values(req.query);
+    let compare = Boolean;
 
-    await MEMBER.destroy(req.params.idx, (err, data) => {
+    if(key.length === 1)
+        compare = ([ key ].toString() === [ 'idx' ].toString())
+
+    if(key.length === 1 && compare) {
+        // http://localhost:8080/member/post?idx=
+        await member.getByidx(value, (err, data) => {
+            try {
+                if(data !== null)    {
+                    console.log(data);
+                    res.render('member/post', { idx : true, data : data[0] });
+                }
+                else if(err !== null)
+                    res.json(err);
+            }
+            catch(err)  {
+                console.log("member post router error " + err);
+            }
+        })
+    }
+    else if(key.length === 0)
+        res.render('member/post', { idx : false, data : '' });
+    else
+        res.redirect('/member/list');
+})
+
+router.post('/post', valid.CheckMemberInfo, valid.errorCallback, async(req, res) => {
+    let key = Object.keys(req.query);
+    let value = Object.values(req.query);
+    let compare = Boolean;
+
+    if(key.length === 1)
+        compare = ([ key ].toString() === [ 'idx' ].toString())
+    else if(key.length === 0) // ???????????
+        compare = true;
+
+    if(key.length === 1 && compare) {
+        // http://localhost:8080/member/post?idx=
+
+        let updateData = {
+            year : req.body.year,
+            semester : req.body.semester, 
+            details : req.body.details,
+            title : req.body.title,
+            complete : req.body.complete
+        }
+
+        await member.modify(value, updateData, (err, data) => {
+            try {
+                if(data !== null)    {
+                    res.redirect(`/member/list?idx=${value}`);
+                }
+                else if(err !== null)
+                    res.json(err);
+            }
+            catch(err)  {
+                console.log("member post router error " + err);
+            }
+        })
+    }
+    else if(key.length === 0 && compare)    {
+        // http://localhost:8080/member/post
+
+        let inputData = {
+            year : req.body.year,
+            semester : req.body.semester, 
+            details : req.body.details,
+            title : req.body.title,
+            complete : req.body.complete
+        }
+        
+        await member.create(inputData, (err, data) => {
+            try {
+                if(data !==  null)    {
+                    res.redirect(`/member/list?idx=${value}`);
+                }
+                else if(err !== null)
+                    res.json(err);
+            }
+            catch(err)  {
+                console.log("member post router error " + err);
+            }
+        })
+    }
+    else
+        res.status(404).json({ message : "Not found" });
+})
+
+// http://localhost:8080/member/list?idx=
+router.delete('/list', isLoggedIn, async(req, res) => {
+    let id = req.query.idx;
+
+    await member.destroy(id, (err, data) => {
         try {
-            res.redirect('/member/list');
+            if(data !== null) {
+                res.redirect('/member/list');
+            }
+            else if(err !== null)
+                res.json(err);
         }
         catch (err) {
-            console.error(err);
+            console.log("member delete router error " + err);
+            res.status(500).json({ message: "Internal Server Error" });
         }
     })
 })
+
 
 module.exports = router;

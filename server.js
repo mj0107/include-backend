@@ -36,21 +36,21 @@ app.use(cookieParser(process.env.secret));
 app.set('port', process.env.PORT || 8080);
 
 //html
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine','ejs');
-app.engine('html', require('ejs').__express);
+// app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine','ejs');
+// app.engine('html', require('ejs').__express);
 
 //react
-// let cors = require('cors');
-// app.use(cors({ origin: true, credentials: true }))
-// app.use(express.static(path.join(__dirname, 'build')));
+let cors = require('cors');
+app.use(cors({ origin: true, credentials: true }))
+app.use(express.static(path.join(__dirname, 'build')));
 
 //html
-const memberBoardRouter = require('./router/memberRegister_html');
-const activityBoardRouter= require('./router/activity_html');
+// const memberBoardRouter = require('./router/memberRegister_html');
+// const activityBoardRouter= require('./router/activity_html');
 // react
-// const memberBoardRouter = require('./router/memberRegister_react');
-// const activityBoardRouter = require('./router/activity_react');
+const memberBoardRouter = require('./router/memberRegister_react');
+const activityBoardRouter = require('./router/activity_react');
 const loginRouter = require('./router/login');
 const logoutRouter = require('./router/logout');
 const signupRouter = require('./router/signup');

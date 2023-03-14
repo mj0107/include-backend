@@ -5,9 +5,9 @@ const { isLoggedIn, isNotLoggedIn } = require('./middleware');
 
 //html
 // http://localhost:8080/login
-router.get('/', async(req, res) => {
-    res.render('signin/login');
-})
+// router.get('/', async(req, res) => {
+//     res.render('signin/login');
+// })
 
 //http://localhost:8080/login
 router.post('/', isNotLoggedIn, (req, res, next) => {
@@ -17,9 +17,9 @@ router.post('/', isNotLoggedIn, (req, res, next) => {
 
         if (!user)  {
             //react
-            //return handleResponse(res, 404, info);
+            return handleResponse(res, 404, info);
             //html
-            res.redirect('/login')
+            // res.redirect('/login')
         }
 
         return req.logIn(user, (loginError) => {
@@ -28,9 +28,9 @@ router.post('/', isNotLoggedIn, (req, res, next) => {
                 return next(loginError);
             }
             //react
-            //handleResponse(res, 200, 'login success');
+            handleResponse(res, 200, 'login success');
             //html
-            res.redirect('/');
+            // res.redirect('/');
         });
     }) (req, res, next);
 });

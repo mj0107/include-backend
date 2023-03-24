@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const passport = require('passport');
-const { isLoggedIn, isNotLoggedIn } = require('./middleware');
+const { isNotLoggedIn } = require('./middleware');
+require('express-session');
 
 //html
 // http://localhost:8080/login
@@ -34,9 +35,5 @@ router.post('/', isNotLoggedIn, (req, res, next) => {
         });
     }) (req, res, next);
 });
-
-let handleResponse = (res, code, statusMsg) => {
-    res.status(code).json({ message : statusMsg })
-}
 
 module.exports = router;

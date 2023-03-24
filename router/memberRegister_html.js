@@ -3,57 +3,103 @@ const router = express.Router();
 const member = require('../model/member');
 const valid = require('../validator/data_valid');
 const { isLoggedIn } = require('./middleware');
+require('express-session');
 
 // 전체 & 부분
-router.get('/list', async(req, res) => {
+router.get('/list', (req, res) => {
     let keys = Object.keys(req.query);
     let values = Object.values(req.query);
-
+    let verified = Object.assign({}, req.session.passport);
     let compare = Boolean;
+    
     if(keys.length === 1)
         compare = ([ keys[0] ].toString() === [ 'idx' ].toString())
     
-    if (keys.length === 1 && compare) {
-        // http://localhost:8080/member/list?idx=
-        await member.getByidx(values, (err, data) => {
-            try {
-                if (data !== null)  {
-                    if(data.length === 0)  
-                        res.status(404).json({ message: "Not Found" });
-                    else
-                        res.render('member/detail', { memberDetail : data[0] });
+    if (Object.values(verified).toString() === 'admin') {
+        if (keys.length === 1 && compare) {
+            console.log("here");
+            // http://localhost:8080/member/list?idx=
+            member.getByidx(values, (err, data) => {
+                try {
+                    if (data !== null)  {
+                        if(data.length === 0)  
+                            res.status(404).json({ message: "Not Found" });
+                        else
+                            res.render('member/detail', { memberDetail : data[0], isLoggedIn : 1 });
+                    }
+                    else if(err !== null)
+                        res.json(data);
                 }
-                else if(err !== null)
-                    res.json(data);
-            }
-            catch (err) {
-                console.log("specific member router error " + err);
-            }
-        })
-    }
-    else if (keys.length === 0)  {
-        // http://localhost:8080/member/list
-        await member.getAll((err, data) => {
-            try {
-                if (data !== null)  {
-                    if(data.length === 0)
-                        res.status(404).json({ message: "Not Found" });
-                    else
-                        res.render('member/list', { memberList : data });
+                catch (err) {
+                    console.log("specific member router error " + err);
                 }
-                else if(err !== null)
-                    res.json(data);
-            }
-            catch (err) {
-                console.log("specific member router error " + err);
-            }
-        })
+            })
+        }
+        else if (keys.length === 0)  {
+            // http://localhost:8080/member/list
+            member.getAll((err, data) => {
+                try {
+                    if (data !== null)  {
+                        if(data.length === 0)
+                            res.status(404).json({ message: "Not Found" });
+                        else
+                            res.render('member/list', { memberList : data, isLoggedIn : 1 });
+                    }
+                    else if(err !== null)
+                        res.json(data);
+                }
+                catch (err) {
+                    console.log("specific member router error " + err);
+                }
+            })
+        }
+        else
+            res.status(400).json({ message: "Forbidden" });
     }
-    else
-        res.status(400).json({ message: "Forbidden" });
+    else    {
+        if (keys.length === 1 && compare) {
+            // http://localhost:8080/member/list?idx=
+            member.getByidx(values, (err, data) => {
+                try {
+                    if (data !== null)  {
+                        if(data.length === 0)  
+                            res.status(404).json({ message: "Not Found" });
+                        else
+                            res.render('member/detail', { memberDetail : data[0] });
+                    }
+                    else if(err !== null)
+                        res.json(data);
+                }
+                catch (err) {
+                    console.log("specific member router error " + err);
+                }
+            })
+        }
+        else if (keys.length === 0)  {
+            // http://localhost:8080/member/list
+            member.getAll((err, data) => {
+                try {
+                    if (data !== null)  {
+                        if(data.length === 0)
+                            res.status(404).json({ message: "Not Found" });
+                        else
+                            res.render('member/list', { memberList : data });
+                    }
+                    else if(err !== null)
+                        res.json(data);
+                }
+                catch (err) {
+                    console.log("specific member router error " + err);
+                }
+            })
+        }
+        else
+            res.status(400).json({ message: "Forbidden" });
+    }
+
 })
 
-router.get('/post', isLoggedIn, async(req, res) => {
+router.get('/post', isLoggedIn, (req, res) => {
     let key = Object.keys(req.query);
     let value = Object.values(req.query);
     let compare = Boolean;
@@ -63,7 +109,7 @@ router.get('/post', isLoggedIn, async(req, res) => {
 
     if(key.length === 1 && compare) {
         // http://localhost:8080/member/post?idx=
-        await member.getByidx(value, (err, data) => {
+        member.getByidx(value, (err, data) => {
             try {
                 if(data !== null)    {
                     console.log(data);
@@ -83,7 +129,7 @@ router.get('/post', isLoggedIn, async(req, res) => {
         res.redirect('/member/list');
 })
 
-router.post('/post', valid.CheckMemberInfo, valid.errorCallback, async(req, res) => {
+router.post('/post', valid.CheckMemberInfo, valid.errorCallback, (req, res) => {
     let key = Object.keys(req.query);
     let value = Object.values(req.query);
     let compare = Boolean;
@@ -104,7 +150,7 @@ router.post('/post', valid.CheckMemberInfo, valid.errorCallback, async(req, res)
             complete : req.body.complete
         }
 
-        await member.modify(value, updateData, (err, data) => {
+        member.modify(value, updateData, (err, data) => {
             try {
                 if(data !== null)    {
                     res.redirect(`/member/list?idx=${value}`);
@@ -128,7 +174,7 @@ router.post('/post', valid.CheckMemberInfo, valid.errorCallback, async(req, res)
             complete : req.body.complete
         }
         
-        await member.create(inputData, (err, data) => {
+        member.create(inputData, (err, data) => {
             try {
                 if(data !==  null)    {
                     res.redirect(`/member/list?idx=${value}`);
@@ -146,10 +192,10 @@ router.post('/post', valid.CheckMemberInfo, valid.errorCallback, async(req, res)
 })
 
 // http://localhost:8080/member/list?idx=
-router.delete('/list', isLoggedIn, async(req, res) => {
+router.delete('/list', isLoggedIn, (req, res) => {
     let id = req.query.idx;
 
-    await member.destroy(id, (err, data) => {
+    member.destroy(id, (err, data) => {
         try {
             if(data !== null) {
                 res.redirect('/member/list');
